@@ -45,7 +45,10 @@ class Config:
     model: str = DEFAULT_MODEL
     host: str = DEFAULT_HOST
     persona: str = "victorian"
-    whisper_timeout: float = 8.0
+    # 25s: measured budget that real whisper fits inside on a CPU-only box
+    # (gemma2:2b at ~5.4 tok/s needs ~18s for 100 tokens); falls back sooner
+    # on dedicated servers, later than the siren-song 8s that always missed.
+    whisper_timeout: float = 25.0
     report_timeout: float = 60.0
     top_n: int = 10
     send_snippets: bool = False

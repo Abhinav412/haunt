@@ -2,7 +2,7 @@
 model = "gemma2:2b"
 host = "http://localhost:11434"
 persona = "victorian"
-whisper_timeout = 8
+whisper_timeout = 25
 report_timeout = 60
 top_n = 10
 send_snippets = false

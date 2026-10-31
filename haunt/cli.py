@@ -256,17 +256,16 @@ def _whisper_inner() -> None:
         haunting = None
 
     prompt = prompts.whisper_prompt(commit, haunting)
+    # no probe gate: a busy-but-alive server flunks a 2s probe now and then;
+    # generate already carries its own timeout and fallback, so just try it
     ghost = Ghost(cfg)
-    probe = ghost.probe()
-    line = None
-    if probe.ok:
-        line = ghost.generate(
-            system=system,
-            prompt=prompt,
-            max_tokens=120,
-            temperature=0.9,
-            timeout=cfg.whisper_timeout,
-        )
+    line = ghost.generate(
+        system=system,
+        prompt=prompt,
+        max_tokens=100,
+        temperature=0.9,
+        timeout=cfg.whisper_timeout,
+    )
     if line is None:
         line = prompts.fallback_whisper(persona, commit.hash)
     typer.echo(render.whisper_line(emoji, line))
@@ -309,29 +308,29 @@ def report(
         persona = _persona_or_default(cfg)
         system = prompts.report_system(persona)
         ghost = Ghost(cfg)
-        probe = ghost.probe()
-        hint = ghost.hint(probe)
-        if hint:
-            typer.echo(hint, err=True)
+        hint_shown = False
         for index, entry in enumerate(entries, start=1):
             history = scanner.histories.get(entry.path)
             subjects = history.last_subjects if history else []
             prompt = prompts.report_prompt(entry, subjects, cfg)
-            narration = (
-                ghost.generate(
-                    system=system,
-                    prompt=prompt,
-                    max_tokens=260,
-                    temperature=0.9,
-                    timeout=cfg.report_timeout,
-                )
-                if probe.ok
-                else None
+            # try regardless of probe — probe is a diagnostic, generate is
+            # the gate (its own timeout + template fallback cover the rest)
+            narration = ghost.generate(
+                system=system,
+                prompt=prompt,
+                max_tokens=260,
+                temperature=0.9,
+                timeout=cfg.report_timeout,
             )
             if narration is None:
                 narration = prompts.fallback_report(entry, persona, f"report::{entry.path}")
+                if not hint_shown:
+                    probe = ghost.probe()  # one honest diagnostic, once
+                    hint = ghost.hint(probe)
+                    if hint:
+                        typer.echo(hint, err=True)
+                    hint_shown = True
             narrations[entry.path] = narration
-            whisperized = "haunt: narrating" if False else "haunt: narrating"
             typer.echo(f"haunt: narrating {index}/{len(entries)} {entry.path}")
 
     md_path = render.write_markdown(
