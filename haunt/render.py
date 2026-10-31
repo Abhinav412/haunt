@@ -108,7 +108,7 @@ def markdown_report(
     lines.append("# 🪦 Hauntings Report")
     lines.append("")
     lines.append(
-        f"Spectral audit by [`haunt`](https://github.com/your-handle/haunt) v0.1 — "
+        f"Spectral audit by [`haunt`](https://github.com/Abhinav412/haunt) v0.1 — "
         f"persona `{cfg.persona}` · model `{cfg.model}` · generated {now}"
     )
     lines.append("")
