@@ -1,0 +1,14 @@
+# haunt config — one ghost, many voices
+model = "gemma2:2b"
+host = "http://localhost:11434"
+persona = "victorian"
+whisper_timeout = 8
+report_timeout = 60
+top_n = 10
+send_snippets = false
+ignore = ["vendor/**", "node_modules/**", "dist/**", "build/**", ".venv/**", "*.lock", "HAUNTINGS.md"]
+[weights]
+dormant = 0.35
+restless = 0.25
+orphaned = 0.25
+debt = 0.15
